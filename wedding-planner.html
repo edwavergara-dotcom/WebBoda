@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Boda Perfecta — Wedding Planner</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --rose: #c0607a;
+    --rose-light: #f9eaee;
+    --rose-mid: #e8a0b0;
+    --gold: #b89650;
+    --gold-light: #f5eed8;
+    --gold-mid: #d4b97a;
+    --cream: #fdfaf6;
+    --white: #ffffff;
+    --text: #2d2226;
+    --text-muted: #7a6068;
+    --text-light: #b0959e;
+    --border: #e8dde0;
+    --success: #3d8a5f;
+    --success-bg: #eaf4ef;
+    --danger: #c05050;
+    --danger-bg: #faeaea;
+    --warning: #a07020;
+    --warning-bg: #fdf3e0;
+    --sidebar-w: 220px;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 2px 8px rgba(192,96,122,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: transform 0.3s;
+  }
+  .sidebar-logo {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .logo-icon {
+    font-size: 22px;
+    color: var(--rose);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .sidebar-logo h1 {
+    font-size: 14px;
+    color: var(--rose);
+    font-weight: normal;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+  .sidebar-logo h1:hover {
+    text-decoration: underline dotted var(--rose-mid);
+  }
+  .sidebar-logo small {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  nav { padding: 12px 0; flex: 1; }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    font-family: 'Arial', sans-serif;
+    text-align: left;
+    transition: background 0.15s, color 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .nav-btn:hover { background: var(--rose-light); color: var(--rose); }
+  .nav-btn.active { background: var(--rose-light); color: var(--rose); border-left-color: var(--rose); font-weight: 600; }
+  .nav-btn .icon { font-size: 18px; width: 22px; flex-shrink: 0; }
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-light);
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+
+  /* ── Main ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 32px 36px;
+    min-height: 100vh;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header {
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+  }
+  .page-header h2 {
+    font-size: 22px;
+    color: var(--rose);
+    font-weight: normal;
+    letter-spacing: 0.02em;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: Arial, sans-serif;
+    margin-top: 4px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    box-shadow: var(--shadow);
+  }
+  .card h3 {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-family: Arial, sans-serif;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  /* ── Stat cards ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+  }
+  .stat-card .label {
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .stat-card .value {
+    font-size: 26px;
+    color: var(--rose);
+    line-height: 1;
+  }
+  .stat-card .sub {
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+  .stat-card.gold .value { color: var(--gold); }
+  .stat-card.green .value { color: var(--success); }
+
+  /* ── Progress bar ── */
+  .progress-wrap { margin: 8px 0 4px; }
+  .progress-bar {
+    height: 10px;
+    background: var(--rose-light);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--rose-mid), var(--rose));
+    border-radius: 999px;
+    transition: width 0.5s;
+  }
+  .progress-fill.gold { background: linear-gradient(90deg, var(--gold-mid), var(--gold)); }
+
+  /* ── Dashboard layout ── */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .dash-grid.full { grid-template-columns: 1fr; }
+  @media(max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--text);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn:hover { background: var(--rose-light); border-color: var(--rose-mid); color: var(--rose); }
+  .btn.primary { background: var(--rose); border-color: var(--rose); color: #fff; }
+  .btn.primary:hover { background: #a84e66; border-color: #a84e66; color: #fff; }
+  .btn.small { padding: 5px 12px; font-size: 12px; }
+  .btn.danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+  .btn.danger:hover { background: var(--danger); color: #fff; }
+  .btn.gold { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .btn.gold:hover { background: #9a7e40; }
+
+  /* ── Forms ── */
+  .form-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    align-items: flex-end;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+  .form-group label { font-size: 12px; color: var(--text-muted); font-family: Arial, sans-serif; }
+  input, select, textarea {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus { border-color: var(--rose-mid); }
+  textarea { resize: vertical; min-height: 60px; }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 13px; }
+  th { padding: 10px 14px; background: var(--rose-light); color: var(--rose); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fdf6f8; }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+    font-weight: 600;
+  }
+  .badge.yes { background: var(--success-bg); color: var(--success); }
+  .badge.no { background: var(--danger-bg); color: var(--danger); }
+  .badge.paid { background: var(--success-bg); color: var(--success); }
+  .badge.pending { background: var(--warning-bg); color: var(--warning); }
+  .badge.rose { background: var(--rose-light); color: var(--rose); }
+
+  /* ── Checklist ── */
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: Arial, sans-serif;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--rose); cursor: pointer; flex-shrink: 0; }
+  .task-item .task-text { flex: 1; font-size: 13.5px; }
+  .task-item.done .task-text { text-decoration: line-through; color: var(--text-light); }
+  .task-item .task-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .task-item .task-date.overdue { color: var(--danger); }
+
+  /* ── Mesa cards ── */
+  .mesas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+  }
+  .mesa-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .mesa-card-header {
+    background: var(--rose);
+    color: #fff;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .mesa-card-header h4 { font-size: 15px; font-weight: normal; letter-spacing: 0.04em; }
+  .mesa-card-header .cap { font-size: 11px; opacity: 0.85; font-family: Arial, sans-serif; }
+  .mesa-seats { padding: 12px 16px; }
+  .seat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+  }
+  .seat-row:last-child { border-bottom: none; }
+  .seat-num { width: 24px; height: 24px; background: var(--rose-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--rose); font-weight: 600; flex-shrink: 0; }
+  .seat-empty { color: var(--text-light); font-style: italic; font-size: 12px; }
+  .seat-conf { margin-left: auto; font-size: 11px; }
+
+  /* ── Budget summary ── */
+  .budget-summary {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .budget-box {
+    flex: 1;
+    min-width: 130px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .budget-box .bl { font-size: 11px; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
+  .budget-box .bv { font-size: 22px; }
+  .budget-box.rose .bv { color: var(--rose); }
+  .budget-box.gold .bv { color: var(--gold); }
+  .budget-box.green .bv { color: var(--success); }
+  .budget-box.red .bv { color: var(--danger); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(45,34,38,0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    width: 90%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(192,96,122,0.18);
+  }
+  .modal h3 { font-size: 18px; color: var(--rose); margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  /* ── Hamburger ── */
+  #hamburger {
+    display: none;
+    position: fixed;
+    top: 14px; left: 14px;
+    z-index: 300;
+    background: var(--rose);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  /* ── Separator ── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ── Section title in pages ── */
+  .section-title {
+    font-size: 15px;
+    color: var(--rose);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── Responsive ── */
+  @media(max-width: 768px) {
+    #sidebar { transform: translateX(-100%); }
+    #sidebar.open { transform: translateX(0); }
+    #main { margin-left: 0; padding: 24px 16px; }
+    #hamburger { display: block; }
+    .page-header { padding-top: 42px; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .dash-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--rose);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    box-shadow: 0 4px 16px rgba(192,96,122,0.3);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 500;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Inline edit ── */
+  .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 16px;
+    color: var(--text-muted);
+    transition: background 0.15s, color 0.15s;
+  }
+  .icon-btn:hover { background: var(--rose-light); color: var(--rose); }
+  .icon-btn.del:hover { background: var(--danger-bg); color: var(--danger); }
+
+  /* Chart containers */
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* upcoming tasks snippet */
+  .upcoming-task {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+  }
+  .upcoming-task:last-child { border-bottom: none; }
+  .upcoming-task .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rose-mid); flex-shrink: 0; }
+  .upcoming-task .dot.done { background: var(--success); }
+  .upcoming-task .utask-text { flex: 1; }
+  .upcoming-task .utask-text.done { text-decoration: line-through; color: var(--text-light); }
+  .upcoming-task .udate { font-size: 11px; color: var(--text-muted); }
+
+  /* ── Mapa del Salón ── */
+  #salon-canvas-wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #fdf8f2;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    cursor: default;
+    user-select: none;
+  }
+  #salon-canvas {
+    display: block;
+    touch-action: none;
+  }
+  .salon-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 14px;
+    padding: 12px 16px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .salon-toolbar .sep {
+    width: 1px; height: 28px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+  .salon-toolbar label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: Arial, sans-serif;
+  }
+  #salon-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: var(--text-muted);
+    align-items: center;
+  }
+  .legend-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .salon-info-panel {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-top: 14px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+  }
+  .salon-info-panel h4 {
+    font-size: 14px;
+    color: var(--rose);
+    margin-bottom: 10px;
+    font-weight: normal;
+  }
+  .guest-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--rose-light);
+    color: var(--rose);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 11px;
+    margin: 3px;
+  }
+  .guest-chip.confirmed { background: var(--success-bg); color: var(--success); }
+  .guest-chip.pending { background: var(--warning-bg); color: var(--warning); }
+  .element-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .palette-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--white);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .palette-item:hover { background: var(--rose-light); border-color: var(--rose-mid); color: var(--rose); }
+  .palette-item .pi-icon { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<button id="hamburger" onclick="toggleSidebar()">☰</button>
+
+<aside id="sidebar">
+  <div class="sidebar-logo" id="sidebar-logo-block">
+    <span class="logo-icon">♡</span>
+    <h1 id="wedding-title-display" onclick="editWeddingName()" title="Haz clic para editar el nombre">Mi Boda Perfecta</h1>
+    <small>Wedding Planner</small>
+    <div id="wedding-name-edit" style="display:none;margin-top:6px">
+      <input type="text" id="wedding-name-input" placeholder="Nombre de tu boda"
+        style="width:100%;font-size:12px;padding:5px 8px;border:1px solid var(--rose-mid);border-radius:6px"
+        onkeydown="handleNameKey(event)" />
+      <div style="display:flex;gap:4px;margin-top:4px">
+        <button onclick="saveWeddingName()" style="flex:1;padding:4px;background:var(--rose);color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer">Guardar</button>
+        <button onclick="cancelWeddingName()" style="flex:1;padding:4px;background:var(--border);color:var(--text-muted);border:none;border-radius:6px;font-size:11px;cursor:pointer">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <button class="nav-btn active" onclick="showPage('dashboard', this)">
+      <span class="icon">🏠</span> Dashboard
+    </button>
+    <button class="nav-btn" onclick="showPage('guests', this)">
+      <span class="icon">👥</span> Invitados y Mesas
+    </button>
+    <button class="nav-btn" onclick="showPage('services', this)">
+      <span class="icon">💐</span> Servicios
+    </button>
+    <button class="nav-btn" onclick="showPage('budget', this)">
+      <span class="icon">💰</span> Presupuesto
+    </button>
+    <button class="nav-btn" onclick="showPage('checklist', this)">
+      <span class="icon">✅</span> Checklist
+    </button>
+    <button class="nav-btn" onclick="showPage('mapasalon', this)">
+      <span class="icon">🗺️</span> Mapa del Salón
+    </button>
+  </nav>
+  <div class="sidebar-footer">Todos los datos se guardan<br>en tu navegador.</div>
+</aside>
+
+<main id="main">
+
+  <!-- ══════════ DASHBOARD ══════════ -->
+  <div id="page-dashboard" class="page active">
+    <div class="page-header">
+      <h2>Dashboard — Resumen de tu boda</h2>
+      <p>Todos los detalles importantes en un solo lugar.</p>
+    </div>
+
+    <div class="stat-grid" id="dash-stats"></div>
+
+    <div class="dash-grid">
+      <div class="card">
+        <h3>Presupuesto estimado vs. real</h3>
+        <div class="chart-wrap"><canvas id="chartBudget"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Confirmación de invitados</h3>
+        <div class="chart-wrap"><canvas id="chartGuests"></canvas></div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="card">
+        <h3>Progreso del checklist</h3>
+        <div id="dash-checklist-progress"></div>
+        <div class="divider"></div>
+        <h3>Próximas tareas</h3>
+        <div id="dash-upcoming"></div>
+      </div>
+      <div class="card">
+        <h3>Estado de pagos de servicios</h3>
+        <div class="chart-wrap" style="height:180px"><canvas id="chartPayments"></canvas></div>
+        <div class="divider"></div>
+        <div id="dash-services-summary"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ INVITADOS Y MESAS ══════════ -->
+  <div id="page-guests" class="page">
+    <div class="page-header">
+      <h2>Invitados y Mesas</h2>
+      <p>Administra tu lista de invitados y el plano de mesas.</p>
+    </div>
+
+    <!-- Guests table section -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="section-title">Lista de invitados</div>
+      <div class="form-row" id="guest-form">
+        <div class="form-group"><label>Nombre</label><input type="text" id="g-name" placeholder="María"></div>
+        <div class="form-group"><label>Apellido</label><input type="text" id="g-last" placeholder="García"></div>
+        <div class="form-group"><label>Confirmado</label>
+          <select id="g-conf"><option value="no">No confirmado</option><option value="si">Confirmado ✓</option></select>
+        </div>
+        <div class="form-group"><label>Mesa</label>
+          <select id="g-mesa"></select>
+        </div>
+        <div class="form-group" style="justify-content:flex-end">
+          <button class="btn primary" onclick="addGuest()">+ Agregar invitado</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="guests-table">
+          <thead>
+            <tr><th>Nombre</th><th>Apellido</th><th>Confirmación</th><th>Mesa</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="guests-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tables section -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="section-title">Crear mesa</div>
+      <div class="form-row">
+        <div class="form-group"><label>Nombre o número de mesa</label><input type="text" id="m-name" placeholder="Mesa 1 o Mesa de Honor"></div>
+        <div class="form-group"><label>Capacidad (personas)</label><input type="number" id="m-cap" min="1" max="20" value="8"></div>
+        <button class="btn gold" style="align-self:flex-end" onclick="addMesa()">+ Crear mesa</button>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-bottom:16px">Plano de mesas</div>
+    <div class="mesas-grid" id="mesas-grid"></div>
+  </div>
+
+  <!-- ══════════ SERVICIOS ══════════ -->
+  <div id="page-services" class="page">
+    <div class="page-header">
+      <h2>Servicios y Proveedores</h2>
+      <p>Gestiona cada servicio, proveedor y costo estimado vs. real.</p>
+    </div>
+    <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn primary" onclick="openServiceModal()">+ Agregar servicio</button>
+      <span style="font-family:Arial,sans-serif;font-size:13px;color:var(--text-muted)">Haz clic en el ícono ✏️ para editar o ✓ para marcar como pagado.</span>
+    </div>
+    <div class="table-wrap">
+      <table id="services-table">
+        <thead>
+          <tr>
+            <th>Categoría / Servicio</th>
+            <th>Proveedor</th>
+            <th>Costo estimado</th>
+            <th>Costo real</th>
+            <th>Estado pago</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="services-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════ PRESUPUESTO ══════════ -->
+  <div id="page-budget" class="page">
+    <div class="page-header">
+      <h2>Presupuesto</h2>
+      <p>Totales, diferencias y cuánto falta por pagar.</p>
+    </div>
+    <div class="budget-summary" id="budget-summary"></div>
+    <div class="card">
+      <div class="section-title">Desglose por servicio</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Servicio</th><th>Proveedor</th><th>Estimado</th><th>Real</th><th>Diferencia</th><th>Estado</th></tr>
+          </thead>
+          <tbody id="budget-tbody"></tbody>
+          <tfoot id="budget-tfoot" style="font-weight:600;font-family:Arial,sans-serif"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ CHECKLIST ══════════ -->
+  <div id="page-checklist" class="page">
+    <div class="page-header">
+      <h2>Checklist de planificación</h2>
+      <p>Tareas clave para tu boda perfecta.</p>
+    </div>
+    <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn primary" onclick="openTaskModal()">+ Nueva tarea</button>
+      <div id="checklist-progress-bar" style="flex:1;min-width:180px"></div>
+    </div>
+    <div class="card">
+      <div id="checklist-list"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ MAPA DEL SALÓN ══════════ -->
+  <div id="page-mapasalon" class="page">
+    <div class="page-header">
+      <h2>Mapa del Salón de Recepción</h2>
+      <p>Diseña el plano de tu salón arrastrando y posicionando mesas, escenario, pista de baile y más.</p>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="salon-toolbar">
+      <strong style="font-family:Arial;font-size:13px;color:var(--text)">Agregar:</strong>
+      <div class="element-palette">
+        <div class="palette-item" onclick="addSalonElement('mesa-redonda')"><span class="pi-icon">⭕</span> Mesa redonda</div>
+        <div class="palette-item" onclick="addSalonElement('mesa-rectangular')"><span class="pi-icon">⬜</span> Mesa rectangular</div>
+        <div class="palette-item" onclick="addSalonElement('mesa-honor')"><span class="pi-icon">👑</span> Mesa de honor</div>
+        <div class="palette-item" onclick="addSalonElement('pista')"><span class="pi-icon">💃</span> Pista de baile</div>
+        <div class="palette-item" onclick="addSalonElement('escenario')"><span class="pi-icon">🎵</span> Escenario / DJ</div>
+        <div class="palette-item" onclick="addSalonElement('altar')"><span class="pi-icon">💒</span> Altar / ceremonia</div>
+        <div class="palette-item" onclick="addSalonElement('barra')"><span class="pi-icon">🍷</span> Barra de bebidas</div>
+        <div class="palette-item" onclick="addSalonElement('pastel')"><span class="pi-icon">🎂</span> Mesa de pastel</div>
+        <div class="palette-item" onclick="addSalonElement('entrada')"><span class="pi-icon">🚪</span> Entrada</div>
+        <div class="palette-item" onclick="addSalonElement('foto')"><span class="pi-icon">📸</span> Fotógrafo</div>
+      </div>
+      <div class="sep"></div>
+      <button class="btn small" onclick="clearSalon()">🗑 Limpiar todo</button>
+      <button class="btn small gold" onclick="autoArrangeMesas()">✨ Auto-distribuir mesas</button>
+      <button class="btn small primary" onclick="exportSalonPNG()">📥 Exportar imagen</button>
+    </div>
+
+    <!-- Hint -->
+    <p style="font-family:Arial;font-size:12px;color:var(--text-muted);margin-bottom:10px">
+      💡 Arrastra los elementos para moverlos. Haz clic en una mesa para ver los invitados asignados. Usa <kbd style="padding:2px 6px;border:1px solid var(--border);border-radius:4px;background:var(--white)">Supr</kbd> o el botón ❌ para eliminar el elemento seleccionado.
+    </p>
+
+    <!-- Canvas -->
+    <div id="salon-canvas-wrap">
+      <canvas id="salon-canvas"></canvas>
+    </div>
+
+    <!-- Legend -->
+    <div id="salon-legend">
+      <span><span class="legend-dot" style="background:#c0607a"></span> Mesa de invitados</span>
+      <span><span class="legend-dot" style="background:#b89650"></span> Mesa de honor</span>
+      <span><span class="legend-dot" style="background:#6a9fd8"></span> Pista de baile</span>
+      <span><span class="legend-dot" style="background:#7db87d"></span> Escenario / Altar</span>
+      <span><span class="legend-dot" style="background:#c89060"></span> Servicios (barra, pastel…)</span>
+      <span><span class="legend-dot" style="background:#999"></span> Entrada / Otros</span>
+      <span style="margin-left:8px">🔲 = seleccionado</span>
+    </div>
+
+    <!-- Info panel (shown when mesa selected) -->
+    <div class="salon-info-panel" id="salon-info" style="display:none">
+      <h4 id="salon-info-title">Invitados en esta mesa</h4>
+      <div id="salon-info-guests"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══════ MODALS ══════ -->
+<div class="modal-overlay" id="modal-service">
+  <div class="modal">
+    <h3 id="modal-service-title">Nuevo servicio</h3>
+    <input type="hidden" id="svc-id">
+    <div class="form-row">
+      <div class="form-group" style="flex:2"><label>Categoría / nombre del servicio</label>
+        <input type="text" id="svc-name" placeholder="Fotografía y video"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2"><label>Proveedor</label>
+        <input type="text" id="svc-provider" placeholder="Foto Magia SAS"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Costo estimado ($)</label>
+        <input type="number" id="svc-est" placeholder="3000000"></div>
+      <div class="form-group"><label>Costo real ($)</label>
+        <input type="number" id="svc-real" placeholder="3200000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Estado de pago</label>
+        <select id="svc-paid"><option value="no">Pendiente</option><option value="si">Pagado</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-service')">Cancelar</button>
+      <button class="btn primary" onclick="saveService()">Guardar servicio</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <h3>Nueva tarea</h3>
+    <div class="form-row">
+      <div class="form-group" style="flex:2">
+        <label>Descripción de la tarea</label>
+        <input type="text" id="task-text" placeholder="Reservar el salón de eventos">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha límite</label>
+        <input type="date" id="task-date">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-task')">Cancelar</button>
+      <button class="btn primary" onclick="addTask()">Agregar tarea</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-edit-guest">
+  <div class="modal">
+    <h3>Editar invitado</h3>
+    <input type="hidden" id="eg-id">
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input type="text" id="eg-name"></div>
+      <div class="form-group"><label>Apellido</label><input type="text" id="eg-last"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Confirmado</label>
+        <select id="eg-conf"><option value="no">No confirmado</option><option value="si">Confirmado ✓</option></select>
+      </div>
+      <div class="form-group"><label>Mesa</label>
+        <select id="eg-mesa"></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-edit-guest')">Cancelar</button>
+      <button class="btn primary" onclick="saveGuest()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DATA STORE (localStorage)
+// ═══════════════════════════════════════════════════
+const KEYS = { guests:'wp_guests', mesas:'wp_mesas', services:'wp_services', tasks:'wp_tasks' };
+
+function load(k) { try { return JSON.parse(localStorage.getItem(k)) || null; } catch { return null; } }
+function save(k,v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+function initData() {
+  if (!load(KEYS.mesas)) {
+    save(KEYS.mesas, [
+      { id:1, name:'Mesa 1', cap:8 },
+      { id:2, name:'Mesa de Honor', cap:10 }
+    ]);
+  }
+  if (!load(KEYS.guests)) {
+    save(KEYS.guests, [
+      { id:1, name:'Valentina', last:'Restrepo', conf:'si', mesa:2 },
+      { id:2, name:'Andrés', last:'Morales', conf:'si', mesa:1 },
+      { id:3, name:'Camila', last:'Torres', conf:'no', mesa:1 },
+      { id:4, name:'Diego', last:'Ramírez', conf:'si', mesa:2 },
+      { id:5, name:'Sofía', last:'López', conf:'si', mesa:1 },
+    ]);
+  }
+  if (!load(KEYS.services)) {
+    save(KEYS.services, [
+      { id:1, name:'Vestido de novia', provider:'Boutique Illusion', est:4500000, real:4800000, paid:'si' },
+      { id:2, name:'Maquillaje y peinado', provider:'Beauty Studio Alma', est:800000, real:850000, paid:'si' },
+      { id:3, name:'Traje del novio', provider:'Sastrería Don Marco', est:1200000, real:1150000, paid:'no' },
+      { id:4, name:'Floristería', provider:'Flores del Jardín', est:2000000, real:0, paid:'no' },
+      { id:5, name:'Música / DJ', provider:'DJ Sensations', est:1500000, real:1500000, paid:'si' },
+      { id:6, name:'Fotografía y video', provider:'Foto Magia SAS', est:3500000, real:3800000, paid:'no' },
+      { id:7, name:'Catering', provider:'Delicias Gourmet Ltda', est:12000000, real:11500000, paid:'no' },
+      { id:8, name:'Pastel de bodas', provider:'Pastelería Luna', est:900000, real:0, paid:'no' },
+      { id:9, name:'Salón / lugar', provider:'Hacienda Los Arrayanes', est:8000000, real:8000000, paid:'si' },
+      { id:10, name:'Invitaciones', provider:'Impresiones Elegance', est:600000, real:580000, paid:'si' },
+      { id:11, name:'Transporte', provider:'Limosinas VIP', est:1200000, real:0, paid:'no' },
+      { id:12, name:'Animación adicional', provider:'Show Events', est:700000, real:0, paid:'no' },
+      { id:13, name:'Luna de miel', provider:'Agencia Paraíso', est:6000000, real:0, paid:'no' },
+    ]);
+  }
+  if (!load(KEYS.tasks)) {
+    const today = new Date(); const fmt = d => d.toISOString().split('T')[0];
+    const add = (d,days) => { const x=new Date(d); x.setDate(x.getDate()+days); return fmt(x); };
+    save(KEYS.tasks, [
+      { id:1, text:'Elegir y confirmar la fecha de la boda', date:add(today,-60), done:true },
+      { id:2, text:'Reservar el salón de eventos', date:add(today,-45), done:true },
+      { id:3, text:'Comprar el vestido de novia', date:add(today,-30), done:true },
+      { id:4, text:'Contratar al fotógrafo y videógrafo', date:add(today,-20), done:true },
+      { id:5, text:'Enviar las invitaciones', date:add(today,5), done:false },
+      { id:6, text:'Confirmar menú con el catering', date:add(today,12), done:false },
+      { id:7, text:'Prueba de vestido', date:add(today,18), done:false },
+      { id:8, text:'Ensayo de ceremonia', date:add(today,25), done:false },
+      { id:9, text:'Confirmar lista final de invitados', date:add(today,30), done:false },
+      { id:10, text:'Recoger arras, ramos y decoración', date:add(today,40), done:false },
+      { id:11, text:'Preparar regalos para los padrinos', date:add(today,42), done:false },
+      { id:12, text:'Confirmar transporte el día de la boda', date:add(today,44), done:false },
+    ]);
+  }
+}
+
+let guests, mesas, services, tasks;
+function reloadData() {
+  guests = load(KEYS.guests) || [];
+  mesas = load(KEYS.mesas) || [];
+  services = load(KEYS.services) || [];
+  tasks = load(KEYS.tasks) || [];
+}
+
+// ═══════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  closeSidebar();
+  renderPage(id);
+}
+
+function renderPage(id) {
+  if (id==='dashboard') renderDashboard();
+  else if (id==='guests') renderGuests();
+  else if (id==='services') renderServices();
+  else if (id==='budget') renderBudget();
+  else if (id==='checklist') renderChecklist();
+  else if (id==='mapasalon') renderMapaSalon();
+}
+
+// ═══════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════
+let chartBudget=null, chartGuests=null, chartPayments=null;
+
+function fmt(n) {
+  if (!n && n!==0) return '—';
+  return '$' + Math.round(n).toLocaleString('es-CO');
+}
+
+function renderDashboard() {
+  reloadData();
+  const totalGuests = guests.length;
+  const confirmed = guests.filter(g=>g.conf==='si').length;
+  const numMesas = mesas.length;
+  const avgPerMesa = numMesas ? (totalGuests/numMesas).toFixed(1) : 0;
+
+  const totalEst = services.reduce((s,x)=>s+(+x.est||0),0);
+  const totalReal = services.reduce((s,x)=>s+(+x.real||0),0);
+  const pct = totalEst ? Math.min(100,(totalReal/totalEst*100)).toFixed(0) : 0;
+
+  const tasksDone = tasks.filter(t=>t.done).length;
+  const tasksTotal = tasks.length;
+  const taskPct = tasksTotal ? Math.round(tasksDone/tasksTotal*100) : 0;
+
+  // Stats
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card">
+      <div class="label">Invitados totales</div>
+      <div class="value">${totalGuests}</div>
+      <div class="sub">${confirmed} confirmados</div>
+    </div>
+    <div class="stat-card green">
+      <div class="label">Mesas</div>
+      <div class="value">${numMesas}</div>
+      <div class="sub">~${avgPerMesa} inv/mesa</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="label">Presupuesto estimado</div>
+      <div class="value" style="font-size:18px">${fmt(totalEst)}</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill gold" style="width:${pct}%"></div></div>
+      </div>
+      <div class="sub">${pct}% ejecutado</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Checklist</div>
+      <div class="value" style="font-size:18px">${tasksDone}/${tasksTotal}</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:${taskPct}%"></div></div>
+      </div>
+      <div class="sub">Tareas completadas</div>
+    </div>
+  `;
+
+  // Budget chart
+  const svcNames = services.slice(0,8).map(s=>s.name.length>18?s.name.slice(0,16)+'…':s.name);
+  const estVals = services.slice(0,8).map(s=>(+s.est||0));
+  const realVals = services.slice(0,8).map(s=>(+s.real||0));
+  if(chartBudget) chartBudget.destroy();
+  chartBudget = new Chart(document.getElementById('chartBudget'), {
+    type:'bar',
+    data:{
+      labels:svcNames,
+      datasets:[
+        {label:'Estimado',data:estVals,backgroundColor:'#f5eed8',borderColor:'#d4b97a',borderWidth:1},
+        {label:'Real',data:realVals,backgroundColor:'#f9eaee',borderColor:'#c0607a',borderWidth:1}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11},color:'#7a6068'}}},
+      scales:{
+        x:{ticks:{font:{size:10},color:'#b0959e'},grid:{display:false}},
+        y:{ticks:{font:{size:10},color:'#b0959e',callback:v=>'$'+Math.round(v/1000)+'k'},grid:{color:'#f0e8eb'}}
+      }
+    }
+  });
+
+  // Guests chart
+  const noConf = totalGuests - confirmed;
+  if(chartGuests) chartGuests.destroy();
+  chartGuests = new Chart(document.getElementById('chartGuests'),{
+    type:'doughnut',
+    data:{
+      labels:['Confirmados','Sin confirmar'],
+      datasets:[{data:[confirmed,noConf],backgroundColor:['#c0607a','#f9eaee'],borderColor:['#a84e66','#e8dde0'],borderWidth:1}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:12},color:'#7a6068'}}}
+    }
+  });
+
+  // Payments chart
+  const paid = services.filter(s=>s.paid==='si').length;
+  const unpaid = services.length - paid;
+  if(chartPayments) chartPayments.destroy();
+  chartPayments = new Chart(document.getElementById('chartPayments'),{
+    type:'pie',
+    data:{
+      labels:['Pagados','Pendientes'],
+      datasets:[{data:[paid,unpaid],backgroundColor:['#eaf4ef','#faeaea'],borderColor:['#3d8a5f','#c05050'],borderWidth:1}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:12},color:'#7a6068'}}}
+    }
+  });
+
+  // Services summary
+  const paidAmt = services.filter(s=>s.paid==='si').reduce((a,s)=>a+(+s.real||+s.est||0),0);
+  const unpaidAmt = services.filter(s=>s.paid!=='si').reduce((a,s)=>a+(+s.real||+s.est||0),0);
+  document.getElementById('dash-services-summary').innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;text-align:center">
+        <div style="font-size:11px;font-family:Arial;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em">Pagado</div>
+        <div style="font-size:18px;color:var(--success)">${fmt(paidAmt)}</div>
+      </div>
+      <div style="flex:1;text-align:center">
+        <div style="font-size:11px;font-family:Arial;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em">Pendiente</div>
+        <div style="font-size:18px;color:var(--danger)">${fmt(unpaidAmt)}</div>
+      </div>
+    </div>
+  `;
+
+  // Checklist upcoming
+  const now = new Date(); now.setHours(0,0,0,0);
+  const upcoming = tasks.filter(t=>!t.done).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,5);
+  document.getElementById('dash-checklist-progress').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <div style="flex:1"><div class="progress-bar"><div class="progress-fill" style="width:${taskPct}%"></div></div></div>
+      <span style="font-size:13px;font-family:Arial;color:var(--rose);font-weight:600">${taskPct}%</span>
+    </div>
+    <div style="font-size:12px;font-family:Arial;color:var(--text-muted)">${tasksDone} de ${tasksTotal} tareas completadas</div>
+  `;
+  document.getElementById('dash-upcoming').innerHTML = upcoming.map(t => {
+    const d = new Date(t.date+'T00:00:00');
+    const diff = Math.round((d-now)/(1000*60*60*24));
+    const label = diff<0?`${Math.abs(diff)}d atrasada`:diff===0?'Hoy':`En ${diff}d`;
+    const over = diff<0;
+    return `<div class="upcoming-task">
+      <div class="dot"></div>
+      <span class="utask-text">${t.text}</span>
+      <span class="udate ${over?'overdue':''}">${label}</span>
+    </div>`;
+  }).join('') || '<p style="font-family:Arial;font-size:13px;color:var(--text-light)">¡Todo al día!</p>';
+}
+
+// ═══════════════════════════════════════════════════
+//  GUESTS
+// ═══════════════════════════════════════════════════
+function renderGuests() {
+  reloadData();
+  populateMesaSelects();
+  const tbody = document.getElementById('guests-tbody');
+  tbody.innerHTML = guests.map(g => {
+    const m = mesas.find(x=>x.id===g.mesa);
+    return `<tr>
+      <td>${g.name}</td>
+      <td>${g.last}</td>
+      <td><span class="badge ${g.conf}">${g.conf==='si'?'Confirmado ✓':'Pendiente'}</span></td>
+      <td>${m?m.name:'—'}</td>
+      <td>
+        <button class="icon-btn" onclick="openEditGuest(${g.id})" title="Editar">✏️</button>
+        <button class="icon-btn del" onclick="deleteGuest(${g.id})" title="Eliminar">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+  renderMesas();
+}
+
+function populateMesaSelects(selectedId) {
+  ['g-mesa','eg-mesa'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Sin asignar</option>' +
+      mesas.map(m=>`<option value="${m.id}" ${m.id===selectedId?'selected':''}>${m.name}</option>`).join('');
+  });
+}
+
+function addGuest() {
+  const name = document.getElementById('g-name').value.trim();
+  const last = document.getElementById('g-last').value.trim();
+  const conf = document.getElementById('g-conf').value;
+  const mesa = +document.getElementById('g-mesa').value || null;
+  if (!name) return toast('Ingresa al menos el nombre.');
+  const id = Date.now();
+  guests.push({id, name, last, conf, mesa});
+  save(KEYS.guests, guests);
+  document.getElementById('g-name').value='';
+  document.getElementById('g-last').value='';
+  renderGuests();
+  toast('Invitado agregado.');
+}
+
+function deleteGuest(id) {
+  if (!confirm('¿Eliminar este invitado?')) return;
+  guests = guests.filter(g=>g.id!==id);
+  save(KEYS.guests, guests);
+  renderGuests();
+  toast('Invitado eliminado.');
+}
+
+function openEditGuest(id) {
+  const g = guests.find(x=>x.id===id);
+  if (!g) return;
+  document.getElementById('eg-id').value = id;
+  document.getElementById('eg-name').value = g.name;
+  document.getElementById('eg-last').value = g.last;
+  document.getElementById('eg-conf').value = g.conf;
+  populateMesaSelects(g.mesa);
+  document.getElementById('eg-mesa').value = g.mesa || '';
+  openModal('modal-edit-guest');
+}
+
+function saveGuest() {
+  const id = +document.getElementById('eg-id').value;
+  const g = guests.find(x=>x.id===id);
+  if (!g) return;
+  g.name = document.getElementById('eg-name').value.trim();
+  g.last = document.getElementById('eg-last').value.trim();
+  g.conf = document.getElementById('eg-conf').value;
+  g.mesa = +document.getElementById('eg-mesa').value || null;
+  save(KEYS.guests, guests);
+  closeModal('modal-edit-guest');
+  renderGuests();
+  toast('Invitado actualizado.');
+}
+
+// ═══════════════════════════════════════════════════
+//  MESAS
+// ═══════════════════════════════════════════════════
+function addMesa() {
+  const name = document.getElementById('m-name').value.trim();
+  const cap = +document.getElementById('m-cap').value || 8;
+  if (!name) return toast('Ingresa el nombre de la mesa.');
+  mesas.push({id:Date.now(), name, cap});
+  save(KEYS.mesas, mesas);
+  document.getElementById('m-name').value='';
+  renderGuests();
+  toast('Mesa creada.');
+}
+
+function renderMesas() {
+  const grid = document.getElementById('mesas-grid');
+  grid.innerHTML = mesas.map(m => {
+    const assigned = guests.filter(g=>g.mesa===m.id);
+    const seats = [];
+    for(let i=1;i<=m.cap;i++) {
+      const g = assigned[i-1];
+      if (g) {
+        seats.push(`<div class="seat-row">
+          <div class="seat-num">${i}</div>
+          <span>${g.name} ${g.last}</span>
+          <span class="seat-conf"><span class="badge ${g.conf}">${g.conf==='si'?'✓':'?'}</span></span>
+        </div>`);
+      } else {
+        seats.push(`<div class="seat-row">
+          <div class="seat-num" style="background:var(--border);color:var(--text-light)">${i}</div>
+          <span class="seat-empty">Asiento libre</span>
+        </div>`);
+      }
+    }
+    const fillPct = Math.round(assigned.length/m.cap*100);
+    return `<div class="mesa-card">
+      <div class="mesa-card-header">
+        <h4>♡ ${m.name}</h4>
+        <span class="cap">${assigned.length}/${m.cap} seats</span>
+      </div>
+      <div style="padding:8px 16px 0">
+        <div class="progress-bar"><div class="progress-fill" style="width:${fillPct}%"></div></div>
+      </div>
+      <div class="mesa-seats">${seats.join('')}</div>
+      <div style="padding:8px 16px 12px;display:flex;gap:6px">
+        <button class="btn small danger" onclick="deleteMesa(${m.id})">Eliminar mesa</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteMesa(id) {
+  if (!confirm('¿Eliminar esta mesa? Los invitados quedarán sin mesa asignada.')) return;
+  mesas = mesas.filter(m=>m.id!==id);
+  guests.forEach(g=>{ if(g.mesa===id) g.mesa=null; });
+  save(KEYS.mesas, mesas);
+  save(KEYS.guests, guests);
+  renderGuests();
+  toast('Mesa eliminada.');
+}
+
+// ═══════════════════════════════════════════════════
+//  SERVICES
+// ═══════════════════════════════════════════════════
+function renderServices() {
+  reloadData();
+  const tbody = document.getElementById('services-tbody');
+  tbody.innerHTML = services.map(s => `
+    <tr>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.provider||'—'}</td>
+      <td>${fmt(s.est)}</td>
+      <td>${s.real?(fmt(s.real)):'—'}</td>
+      <td>
+        <span class="badge ${s.paid==='si'?'paid':'pending'}">${s.paid==='si'?'Pagado':'Pendiente'}</span>
+      </td>
+      <td>
+        <button class="icon-btn" onclick="openServiceModal(${s.id})" title="Editar">✏️</button>
+        <button class="icon-btn" onclick="togglePaid(${s.id})" title="Cambiar estado pago">
+          ${s.paid==='si'?'↩️':'✓'}
+        </button>
+        <button class="icon-btn del" onclick="deleteService(${s.id})" title="Eliminar">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openServiceModal(id) {
+  document.getElementById('svc-id').value = id||'';
+  if (id) {
+    const s = services.find(x=>x.id===id);
+    document.getElementById('modal-service-title').textContent='Editar servicio';
+    document.getElementById('svc-name').value = s.name;
+    document.getElementById('svc-provider').value = s.provider||'';
+    document.getElementById('svc-est').value = s.est||'';
+    document.getElementById('svc-real').value = s.real||'';
+    document.getElementById('svc-paid').value = s.paid||'no';
+  } else {
+    document.getElementById('modal-service-title').textContent='Nuevo servicio';
+    ['svc-name','svc-provider','svc-est','svc-real'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('svc-paid').value='no';
+  }
+  openModal('modal-service');
+}
+
+function saveService() {
+  const id = +document.getElementById('svc-id').value;
+  const name = document.getElementById('svc-name').value.trim();
+  if (!name) return toast('El nombre es obligatorio.');
+  const obj = {
+    name, provider:document.getElementById('svc-provider').value.trim(),
+    est:+document.getElementById('svc-est').value||0,
+    real:+document.getElementById('svc-real').value||0,
+    paid:document.getElementById('svc-paid').value
+  };
+  if (id) { const i=services.findIndex(x=>x.id===id); services[i]={...services[i],...obj}; }
+  else { services.push({id:Date.now(),...obj}); }
+  save(KEYS.services, services);
+  closeModal('modal-service');
+  renderServices();
+  toast(id?'Servicio actualizado.':'Servicio agregado.');
+}
+
+function togglePaid(id) {
+  const s = services.find(x=>x.id===id);
+  s.paid = s.paid==='si'?'no':'si';
+  save(KEYS.services, services);
+  renderServices();
+  toast(s.paid==='si'?'Marcado como pagado.':'Marcado como pendiente.');
+}
+
+function deleteService(id) {
+  if (!confirm('¿Eliminar este servicio?')) return;
+  services = services.filter(s=>s.id!==id);
+  save(KEYS.services, services);
+  renderServices();
+  toast('Servicio eliminado.');
+}
+
+// ═══════════════════════════════════════════════════
+//  BUDGET
+// ═══════════════════════════════════════════════════
+function renderBudget() {
+  reloadData();
+  const totalEst = services.reduce((s,x)=>s+(+x.est||0),0);
+  const totalReal = services.reduce((s,x)=>s+(+x.real||0),0);
+  const paid = services.filter(s=>s.paid==='si').reduce((a,s)=>a+(+s.real||+s.est||0),0);
+  const remaining = (totalReal||totalEst) - paid;
+
+  document.getElementById('budget-summary').innerHTML = `
+    <div class="budget-box rose"><div class="bl">Total estimado</div><div class="bv">${fmt(totalEst)}</div></div>
+    <div class="budget-box gold"><div class="bl">Total real</div><div class="bv">${fmt(totalReal)}</div></div>
+    <div class="budget-box green"><div class="bl">Ya pagado</div><div class="bv">${fmt(paid)}</div></div>
+    <div class="budget-box red"><div class="bl">Por pagar</div><div class="bv">${fmt(remaining)}</div></div>
+  `;
+
+  let totalEstSum=0,totalRealSum=0,totalDiffSum=0;
+  const tbody = document.getElementById('budget-tbody');
+  tbody.innerHTML = services.map(s=>{
+    const est=+s.est||0, real=+s.real||0;
+    const diff = real-est;
+    const diffColor = diff>0?'var(--danger)':diff<0?'var(--success)':'var(--text-muted)';
+    const diffSign = diff>0?'+':'';
+    totalEstSum+=est; totalRealSum+=real; totalDiffSum+=diff;
+    return `<tr>
+      <td><strong>${s.name}</strong></td>
+      <td style="color:var(--text-muted)">${s.provider||'—'}</td>
+      <td>${fmt(est)}</td>
+      <td>${real?fmt(real):'—'}</td>
+      <td style="color:${diffColor}">${real?diffSign+fmt(diff):'—'}</td>
+      <td><span class="badge ${s.paid==='si'?'paid':'pending'}">${s.paid==='si'?'Pagado':'Pendiente'}</span>
+        <button class="icon-btn small" onclick="togglePaidBudget(${s.id})" title="Cambiar">${s.paid==='si'?'↩':'✓'}</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const dColor = totalDiffSum>0?'var(--danger)':totalDiffSum<0?'var(--success)':'var(--text-muted)';
+  document.getElementById('budget-tfoot').innerHTML = `
+    <tr style="background:var(--gold-light)">
+      <td colspan="2" style="font-size:13px;font-family:Arial">TOTAL</td>
+      <td style="color:var(--gold)">${fmt(totalEstSum)}</td>
+      <td style="color:var(--rose)">${fmt(totalRealSum)}</td>
+      <td style="color:${dColor}">${totalDiffSum>=0?'+':''}${fmt(totalDiffSum)}</td>
+      <td></td>
+    </tr>
+  `;
+}
+
+function togglePaidBudget(id) { togglePaid(id); renderBudget(); }
+
+// ═══════════════════════════════════════════════════
+//  CHECKLIST
+// ═══════════════════════════════════════════════════
+function renderChecklist() {
+  reloadData();
+  const done = tasks.filter(t=>t.done).length;
+  const pct = tasks.length ? Math.round(done/tasks.length*100) : 0;
+  document.getElementById('checklist-progress-bar').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="flex:1"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+      <span style="font-size:13px;font-family:Arial;color:var(--rose);font-weight:600;white-space:nowrap">${done}/${tasks.length} — ${pct}%</span>
+    </div>
+  `;
+  const now = new Date(); now.setHours(0,0,0,0);
+  const sorted = [...tasks].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  document.getElementById('checklist-list').innerHTML = sorted.map(t=>{
+    const d = new Date(t.date+'T00:00:00');
+    const diff = Math.round((d-now)/(1000*60*60*24));
+    const overdue = !t.done && diff<0;
+    const dateLabel = t.date ? new Date(t.date+'T00:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'}) : '';
+    return `<div class="task-item ${t.done?'done':''}">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask(${t.id})">
+      <span class="task-text">${t.text}</span>
+      <span class="task-date ${overdue?'overdue':''}">${dateLabel}${overdue?' ⚠️':''}</span>
+      <button class="icon-btn del" onclick="deleteTask(${t.id})" title="Eliminar">🗑️</button>
+    </div>`;
+  }).join('');
+}
+
+function openTaskModal() {
+  document.getElementById('task-text').value='';
+  document.getElementById('task-date').value='';
+  openModal('modal-task');
+}
+
+function addTask() {
+  const text = document.getElementById('task-text').value.trim();
+  const date = document.getElementById('task-date').value;
+  if (!text) return toast('Ingresa una descripción.');
+  tasks.push({id:Date.now(), text, date, done:false});
+  save(KEYS.tasks, tasks);
+  closeModal('modal-task');
+  renderChecklist();
+  toast('Tarea agregada.');
+}
+
+function toggleTask(id) {
+  const t = tasks.find(x=>x.id===id);
+  t.done = !t.done;
+  save(KEYS.tasks, tasks);
+  renderChecklist();
+}
+
+function deleteTask(id) {
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  tasks = tasks.filter(t=>t.id!==id);
+  save(KEYS.tasks, tasks);
+  renderChecklist();
+  toast('Tarea eliminada.');
+}
+
+// ═══════════════════════════════════════════════════
+//  MODAL HELPERS
+// ═══════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target===m) m.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+
+// ═══════════════════════════════════════════════════
+//  SIDEBAR MOBILE
+// ═══════════════════════════════════════════════════
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  MAPA DEL SALÓN — Canvas engine
+// ═══════════════════════════════════════════════════
+const SALON_KEY = 'wp_salon_elements';
+
+let salonElements = [];
+let selectedEl = null;
+let dragEl = null;
+let dragOffX = 0, dragOffY = 0;
+let salonCanvas, salonCtx;
+let canvasW = 900, canvasH = 600;
+let isSalonInit = false;
+
+const ELEMENT_DEFAULTS = {
+  'mesa-redonda':    { w:80,  h:80,  label:'Mesa',      color:'#c0607a', shape:'circle',  category:'mesa' },
+  'mesa-rectangular':{ w:110, h:70,  label:'Mesa',      color:'#c0607a', shape:'rect',    category:'mesa' },
+  'mesa-honor':      { w:160, h:70,  label:'Honor',     color:'#b89650', shape:'rect',    category:'mesa-honor' },
+  'pista':           { w:160, h:130, label:'Pista',     color:'#6a9fd8', shape:'rect',    category:'deco' },
+  'escenario':       { w:180, h:80,  label:'Escenario', color:'#7db87d', shape:'rect',    category:'deco' },
+  'altar':           { w:120, h:80,  label:'Altar',     color:'#7db87d', shape:'rect',    category:'deco' },
+  'barra':           { w:110, h:55,  label:'Barra',     color:'#c89060', shape:'rect',    category:'service' },
+  'pastel':          { w:80,  h:55,  label:'Pastel 🎂', color:'#c89060', shape:'rect',    category:'service' },
+  'entrada':         { w:90,  h:50,  label:'Entrada 🚪',color:'#999999', shape:'rect',    category:'other' },
+  'foto':            { w:60,  h:60,  label:'📸',        color:'#888888', shape:'circle',  category:'other' },
+};
+
+function loadSalonElements() {
+  try { salonElements = JSON.parse(localStorage.getItem(SALON_KEY)) || []; } catch { salonElements = []; }
+}
+function saveSalonElements() { localStorage.setItem(SALON_KEY, JSON.stringify(salonElements)); }
+
+function renderMapaSalon() {
+  reloadData();
+  loadSalonElements();
+  if (!isSalonInit) { initSalonCanvas(); isSalonInit = true; }
+  else { resizeSalonCanvas(); drawSalon(); }
+  linkMesasToElements();
+}
+
+function initSalonCanvas() {
+  salonCanvas = document.getElementById('salon-canvas');
+  salonCtx = salonCanvas.getContext('2d');
+  resizeSalonCanvas();
+  drawSalon();
+  setupSalonEvents();
+}
+
+function resizeSalonCanvas() {
+  const wrap = document.getElementById('salon-canvas-wrap');
+  canvasW = wrap.clientWidth || 900;
+  canvasH = Math.max(500, Math.round(canvasW * 0.62));
+  salonCanvas.width = canvasW;
+  salonCanvas.height = canvasH;
+  wrap.style.height = canvasH + 'px';
+}
+
+function linkMesasToElements() {
+  // Match saved elements with current mesas by label
+  salonElements.forEach(el => {
+    if (el.category === 'mesa' || el.category === 'mesa-honor') {
+      const m = mesas.find(mx => mx.name === el.mesaName);
+      if (m) el.mesaId = m.id;
+    }
+  });
+}
+
+function addSalonElement(type) {
+  const def = ELEMENT_DEFAULTS[type];
+  if (!def) return;
+  let label = def.label;
+  // if it's a mesa type, try to auto-assign next unplaced mesa
+  let mesaId = null, mesaName = null;
+  if (def.category === 'mesa' || def.category === 'mesa-honor') {
+    const usedIds = salonElements.filter(e=>e.mesaId).map(e=>e.mesaId);
+    const free = mesas.find(m=>!usedIds.includes(m.id));
+    if (free) { mesaId = free.id; mesaName = free.name; label = free.name; }
+    else label = def.label + ' ' + (salonElements.filter(e=>e.type===type).length+1);
+  }
+  const el = {
+    id: Date.now(),
+    type, label,
+    x: 60 + Math.random()*(canvasW-200),
+    y: 60 + Math.random()*(canvasH-200),
+    w: def.w, h: def.h,
+    color: def.color,
+    shape: def.shape,
+    category: def.category,
+    mesaId, mesaName,
+    rotation: 0,
+  };
+  salonElements.push(el);
+  saveSalonElements();
+  drawSalon();
+  toast('Elemento agregado. Arrástralo al lugar deseado.');
+}
+
+function drawSalon() {
+  if (!salonCtx) return;
+  const ctx = salonCtx;
+  ctx.clearRect(0, 0, canvasW, canvasH);
+
+  // Background
+  ctx.fillStyle = '#fdf8f2';
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // Room border
+  ctx.strokeStyle = '#d4b97a';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([]);
+  ctx.strokeRect(18, 18, canvasW-36, canvasH-36);
+
+  // Subtle grid
+  ctx.strokeStyle = '#ede8e0';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([4,4]);
+  for (let x=40; x<canvasW-18; x+=50) { ctx.beginPath(); ctx.moveTo(x,18); ctx.lineTo(x,canvasH-18); ctx.stroke(); }
+  for (let y=40; y<canvasH-18; y+=50) { ctx.beginPath(); ctx.moveTo(18,y); ctx.lineTo(canvasW-18,y); ctx.stroke(); }
+  ctx.setLineDash([]);
+
+  // Room label
+  ctx.font = '12px Arial';
+  ctx.fillStyle = '#d4b97a';
+  ctx.textAlign = 'right';
+  ctx.fillText('SALÓN DE RECEPCIÓN', canvasW-26, canvasH-26);
+
+  // Draw elements back to front (selected on top)
+  const sorted = [...salonElements.filter(e=>e!==selectedEl), ...(selectedEl?[selectedEl]:[])];
+  sorted.forEach(el => drawElement(ctx, el));
+}
+
+function drawElement(ctx, el) {
+  const cx = el.x + el.w/2, cy = el.y + el.h/2;
+  const isSelected = el === selectedEl;
+  const alpha = 0.92;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  // Selection glow
+  if (isSelected) {
+    ctx.shadowColor = el.color;
+    ctx.shadowBlur = 14;
+  }
+
+  // Shape fill
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = el.color + '28';
+  ctx.strokeStyle = el.color;
+  ctx.lineWidth = isSelected ? 2.5 : 1.8;
+
+  if (el.shape === 'circle') {
+    const r = Math.min(el.w, el.h)/2;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+    // chairs around
+    if (el.category==='mesa'||el.category==='mesa-honor') {
+      const cap = getMesaCap(el.mesaId);
+      drawChairsCircle(ctx, r, cap, el.color);
+    }
+  } else {
+    const hw = el.w/2, hh = el.h/2;
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(-hw, -hh, el.w, el.h, 8);
+    } else {
+      const r=8,x=-hw,y=-hh,w=el.w,h=el.h;
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+    }
+    ctx.fill();
+    ctx.stroke();
+    // chairs around rect mesa
+    if (el.category==='mesa'||el.category==='mesa-honor') {
+      const cap = getMesaCap(el.mesaId);
+      drawChairsRect(ctx, el.w, el.h, cap, el.color);
+    }
+  }
+
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+
+  // Label
+  ctx.fillStyle = darken(el.color);
+  ctx.font = `bold 11px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const maxW = el.w - 10;
+  const words = el.label.split(' ');
+  let line1 = '', line2 = '';
+  words.forEach(w => {
+    if (ctx.measureText(line1+(line1?' ':'')+w).width < maxW) line1 += (line1?' ':'')+w;
+    else line2 += (line2?' ':'')+w;
+  });
+  if (line2) {
+    ctx.fillText(truncate(line1, ctx, maxW), 0, -6);
+    ctx.fillText(truncate(line2, ctx, maxW), 0, 7);
+  } else {
+    ctx.fillText(truncate(line1, ctx, maxW), 0, 0);
+  }
+
+  // Guest count badge for mesas
+  if (el.mesaId) {
+    const gCount = guests.filter(g=>g.mesaId===el.mesaId||g.mesa===el.mesaId).length;
+    const cap = getMesaCap(el.mesaId);
+    ctx.fillStyle = el.color;
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    ctx.arc(el.w/2-2, -el.h/2+2, 10, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px Arial';
+    ctx.fillText(gCount+'/'+cap, el.w/2-2, -el.h/2+2);
+  }
+
+  // Selection indicator corners
+  if (isSelected) {
+    ctx.strokeStyle = el.color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4,3]);
+    ctx.strokeRect(-el.w/2-6, -el.h/2-6, el.w+12, el.h+12);
+    ctx.setLineDash([]);
+    // Delete X button
+    ctx.fillStyle = '#c05050';
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    ctx.arc(el.w/2+6, -el.h/2-6, 9, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px Arial';
+    ctx.fillText('✕', el.w/2+6, -el.h/2-5);
+  }
+
+  ctx.restore();
+}
+
+function drawChairsCircle(ctx, r, cap, color) {
+  if (!cap || cap <= 0) return;
+  const chairR = 7;
+  for (let i=0; i<cap; i++) {
+    const angle = (i/cap)*Math.PI*2 - Math.PI/2;
+    const cx2 = Math.cos(angle)*(r+chairR+4);
+    const cy2 = Math.sin(angle)*(r+chairR+4);
+    ctx.fillStyle = color+'60';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx2, cy2, chairR, 0, Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+  }
+}
+
+function drawChairsRect(ctx, w, h, cap, color) {
+  if (!cap || cap <= 0) return;
+  const chairR = 6;
+  const perSide = Math.ceil(cap/4);
+  let drawn = 0;
+  const sides = [
+    {axis:'x', sign:-1, range:w},
+    {axis:'x', sign:1, range:w},
+    {axis:'y', sign:-1, range:h},
+    {axis:'y', sign:1, range:h},
+  ];
+  sides.forEach(side => {
+    for (let i=0; i<perSide && drawn<cap; i++, drawn++) {
+      const t = (i+0.5)/perSide;
+      let cx2, cy2;
+      if (side.axis==='x') {
+        cx2 = -w/2 + t*w;
+        cy2 = side.sign*(h/2 + chairR + 4);
+      } else {
+        cx2 = side.sign*(w/2 + chairR + 4);
+        cy2 = -h/2 + t*h;
+      }
+      ctx.fillStyle = color+'60';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx2, cy2, chairR, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+    }
+  });
+}
+
+function getMesaCap(mesaId) {
+  if (!mesaId) return 8;
+  const m = mesas.find(x=>x.id===mesaId);
+  return m ? m.cap : 8;
+}
+
+function truncate(text, ctx, maxW) {
+  if (ctx.measureText(text).width <= maxW) return text;
+  while (text.length > 1 && ctx.measureText(text+'…').width > maxW) text = text.slice(0,-1);
+  return text+'…';
+}
+
+function darken(hex) {
+  const n = parseInt(hex.replace('#',''),16);
+  const r=Math.max(0,(n>>16)-50), g=Math.max(0,((n>>8)&0xff)-50), b=Math.max(0,(n&0xff)-50);
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+function hitTest(el, x, y) {
+  if (el.shape==='circle') {
+    const r = Math.min(el.w,el.h)/2 + 18; // include chair area
+    return Math.hypot(x-(el.x+el.w/2), y-(el.y+el.h/2)) < r;
+  }
+  return x >= el.x-18 && x <= el.x+el.w+18 && y >= el.y-18 && y <= el.y+el.h+18;
+}
+
+function hitDeleteBtn(el, x, y) {
+  if (!selectedEl || el!==selectedEl) return false;
+  const bx = el.x + el.w + 6, by = el.y - 6;
+  return Math.hypot(x-bx, y-by) < 12;
+}
+
+function getCanvasPos(e) {
+  const rect = salonCanvas.getBoundingClientRect();
+  const scaleX = salonCanvas.width / rect.width;
+  const scaleY = salonCanvas.height / rect.height;
+  const touch = e.touches ? e.touches[0] : e;
+  return { x:(touch.clientX-rect.left)*scaleX, y:(touch.clientY-rect.top)*scaleY };
+}
+
+function setupSalonEvents() {
+  // Mouse
+  salonCanvas.addEventListener('mousedown', onSalonDown);
+  salonCanvas.addEventListener('mousemove', onSalonMove);
+  salonCanvas.addEventListener('mouseup', onSalonUp);
+  salonCanvas.addEventListener('mouseleave', onSalonUp);
+  // Touch
+  salonCanvas.addEventListener('touchstart', e=>{e.preventDefault();onSalonDown(e);},{passive:false});
+  salonCanvas.addEventListener('touchmove', e=>{e.preventDefault();onSalonMove(e);},{passive:false});
+  salonCanvas.addEventListener('touchend', onSalonUp);
+  // Keyboard delete
+  document.addEventListener('keydown', e=>{
+    if ((e.key==='Delete'||e.key==='Backspace') && selectedEl && document.getElementById('page-mapasalon').classList.contains('active')) {
+      deleteSelectedEl();
+    }
+  });
+  // Resize
+  window.addEventListener('resize', ()=>{
+    if (document.getElementById('page-mapasalon').classList.contains('active')) {
+      resizeSalonCanvas(); drawSalon();
+    }
+  });
+}
+
+function onSalonDown(e) {
+  const {x,y} = getCanvasPos(e);
+  // Check delete button first
+  if (selectedEl && hitDeleteBtn(selectedEl,x,y)) { deleteSelectedEl(); return; }
+  // Hit test elements in reverse (top first)
+  let hit = null;
+  for (let i=salonElements.length-1;i>=0;i--) {
+    if (hitTest(salonElements[i],x,y)) { hit=salonElements[i]; break; }
+  }
+  selectedEl = hit;
+  if (hit) {
+    dragEl = hit;
+    dragOffX = x - hit.x;
+    dragOffY = y - hit.y;
+    showSalonInfo(hit);
+  } else {
+    hideSalonInfo();
+  }
+  drawSalon();
+}
+
+function onSalonMove(e) {
+  if (!dragEl) return;
+  const {x,y} = getCanvasPos(e);
+  dragEl.x = Math.max(20, Math.min(canvasW-dragEl.w-20, x-dragOffX));
+  dragEl.y = Math.max(20, Math.min(canvasH-dragEl.h-20, y-dragOffY));
+  drawSalon();
+}
+
+function onSalonUp() {
+  if (dragEl) { saveSalonElements(); }
+  dragEl = null;
+}
+
+function deleteSelectedEl() {
+  if (!selectedEl) return;
+  salonElements = salonElements.filter(e=>e!==selectedEl);
+  selectedEl = null;
+  saveSalonElements();
+  hideSalonInfo();
+  drawSalon();
+  toast('Elemento eliminado.');
+}
+
+function showSalonInfo(el) {
+  const panel = document.getElementById('salon-info');
+  const title = document.getElementById('salon-info-title');
+  const guestsDiv = document.getElementById('salon-info-guests');
+  if (el.mesaId) {
+    const m = mesas.find(x=>x.id===el.mesaId);
+    title.textContent = '♡ ' + (m?m.name:el.label) + ' — Invitados asignados';
+    const assigned = guests.filter(g=>g.mesa===el.mesaId);
+    if (assigned.length===0) {
+      guestsDiv.innerHTML = '<span style="color:var(--text-light);font-size:13px">Sin invitados asignados aún.</span>';
+    } else {
+      guestsDiv.innerHTML = assigned.map(g=>
+        `<span class="guest-chip ${g.conf==='si'?'confirmed':'pending'}">
+          ${g.conf==='si'?'✓':'?'} ${g.name} ${g.last}
+        </span>`
+      ).join('');
+    }
+    panel.style.display = 'block';
+  } else {
+    title.textContent = el.label;
+    guestsDiv.innerHTML = `<span style="color:var(--text-muted);font-size:13px">${getCategoryDescription(el.category)}</span>`;
+    panel.style.display = 'block';
+  }
+}
+
+function getCategoryDescription(cat) {
+  const map = { deco:'Elemento decorativo del salón.', service:'Área de servicio.', other:'Elemento de referencia.' };
+  return map[cat] || '';
+}
+
+function hideSalonInfo() { document.getElementById('salon-info').style.display='none'; }
+
+function clearSalon() {
+  if (!confirm('¿Eliminar todos los elementos del mapa?')) return;
+  salonElements = []; selectedEl = null;
+  saveSalonElements(); drawSalon(); hideSalonInfo();
+  toast('Mapa limpiado.');
+}
+
+function autoArrangeMesas() {
+  // Remove existing mesa elements and rebuild from mesas data
+  salonElements = salonElements.filter(e=>e.category!=='mesa'&&e.category!=='mesa-honor');
+  const margin = 40;
+  const cols = Math.ceil(Math.sqrt(mesas.length+1));
+  const cellW = (canvasW - margin*2) / cols;
+  const cellH = (canvasH - margin*2 - 80) / Math.ceil((mesas.length)/cols);
+  mesas.forEach((m, i) => {
+    const col = i % cols, row = Math.floor(i/cols);
+    const isHonor = m.name.toLowerCase().includes('honor');
+    const def = ELEMENT_DEFAULTS[isHonor?'mesa-honor':'mesa-redonda'];
+    salonElements.push({
+      id: Date.now()+i,
+      type: isHonor?'mesa-honor':'mesa-redonda',
+      label: m.name,
+      x: margin + col*cellW + cellW/2 - def.w/2,
+      y: 80 + row*cellH + cellH/2 - def.h/2,
+      w: def.w, h: def.h,
+      color: def.color, shape: def.shape,
+      category: def.category,
+      mesaId: m.id, mesaName: m.name,
+    });
+  });
+  saveSalonElements(); drawSalon();
+  toast('¡Mesas distribuidas automáticamente!');
+}
+
+function exportSalonPNG() {
+  // Deselect before export
+  const prev = selectedEl; selectedEl = null; drawSalon();
+  const link = document.createElement('a');
+  link.download = 'mapa-salon-boda.png';
+  link.href = salonCanvas.toDataURL('image/png');
+  link.click();
+  selectedEl = prev; drawSalon();
+  toast('Imagen exportada.');
+}
+
+// ═══════════════════════════════════════════════════
+//  NOMBRE DE LA BODA
+// ═══════════════════════════════════════════════════
+function loadWeddingName() {
+  const name = localStorage.getItem('wp_wedding_name') || 'Mi Boda Perfecta';
+  document.getElementById('wedding-title-display').textContent = name;
+  document.title = name + ' — Wedding Planner';
+}
+
+function editWeddingName() {
+  const current = document.getElementById('wedding-title-display').textContent;
+  document.getElementById('wedding-name-input').value = current;
+  document.getElementById('wedding-title-display').style.display = 'none';
+  document.getElementById('wedding-name-edit').style.display = 'block';
+  document.getElementById('wedding-name-input').focus();
+  document.getElementById('wedding-name-input').select();
+}
+
+function saveWeddingName() {
+  const val = document.getElementById('wedding-name-input').value.trim();
+  const name = val || 'Mi Boda Perfecta';
+  localStorage.setItem('wp_wedding_name', name);
+  document.getElementById('wedding-title-display').textContent = name;
+  document.title = name + ' — Wedding Planner';
+  document.getElementById('wedding-title-display').style.display = 'block';
+  document.getElementById('wedding-name-edit').style.display = 'none';
+  toast('¡Nombre guardado: ' + name + '!');
+}
+
+function cancelWeddingName() {
+  document.getElementById('wedding-title-display').style.display = 'block';
+  document.getElementById('wedding-name-edit').style.display = 'none';
+}
+
+function handleNameKey(e) {
+  if (e.key === 'Enter') saveWeddingName();
+  if (e.key === 'Escape') cancelWeddingName();
+}
+
+// ═══════════════════════════════════════════════════
+initData();
+loadWeddingName();
+renderPage('dashboard');
+</script>
+</body>
+</html>
